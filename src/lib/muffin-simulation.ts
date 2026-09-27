@@ -93,7 +93,7 @@ export function advanceDay(current: SimulationState): SimulationState {
         machine.broken = 0;
         machine.repairDays = 0;
       }
-    } else if (machine.active > 0 && Math.random() < (kind === "packaging" ? 0.01 : 0.02)) {
+    } else if (machine.active > 0 && Math.random() < ({ mixing: 0.02, baking: 0.02, icing: 0.015, packaging: 0.01 }[kind])) {
       machine.broken = 1;
       machine.repairDays = kind === "mixing" || kind === "baking" ? 2 : 1;
     }
