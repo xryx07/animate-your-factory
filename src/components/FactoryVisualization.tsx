@@ -52,6 +52,7 @@ export function FactoryVisualization({ state, playing, speed = 1 }: FactoryVisua
           <div className="stage-pin-bottom">{broken ? `${machine.repairDays}d repair` : `${capacity}/day`}</div>
         </div>;
       })}
+      {running && <div className="machine-effects" aria-hidden="true"><i className="oven-warmth"/><i className="icing-action"/><i className="packer-action"/></div>}
       <div className="belt-products" aria-hidden="true">
         {running && units.map((unit, index) => <img key={index} src={unit.image} width={816} height={816} alt="" style={{ "--from": `${unit.from}%`, "--to": `${unit.to}%`, "--delay": `${unit.delay}s` } as CSSProperties} />)}
       </div>
