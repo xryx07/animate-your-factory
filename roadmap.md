@@ -4,4 +4,4 @@
 - [x] Verify the visual and interactions on desktop and mobile.
 - [x] Keep the deliverable to the factory-floor visual only; remove the upload/configuration interface.
 - [x] Animate muffins across the upper conveyor through every working machine and out as packed product without overlap.
-- [ ] Recheck the isolated factory visual on desktop and mobile.
+- [x] Recheck the isolated factory visual on desktop and mobile.
