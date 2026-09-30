@@ -3,8 +3,6 @@ import { useEffect, useState } from "react";
 import { Gauge, Pause, Play, RotateCcw, SkipForward } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FactoryVisualization } from "@/components/FactoryVisualization";
-import { FactoryLayoutStudio } from "@/components/FactoryLayoutStudio";
-import { DEFAULT_LAYOUT, loadStoredLayout, type FactoryLayout } from "@/lib/factory-layout";
 import { advanceDay, initialSimulation, type SimulationState } from "@/lib/muffin-simulation";
 
 export const Route = createFileRoute("/")({
@@ -23,15 +21,6 @@ function FactoryPreview() {
   const [state, setState] = useState<SimulationState>(initialSimulation);
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState(1);
-  const [layout, setLayout] = useState<FactoryLayout>(DEFAULT_LAYOUT);
-  const [background, setBackground] = useState<string | null>(null);
-
-  useEffect(() => {
-    const stored = loadStoredLayout();
-    if (!stored) return;
-    setLayout(stored.layout);
-    setBackground(stored.background);
-  }, []);
 
   useEffect(() => {
     if (!playing) return;
@@ -46,7 +35,7 @@ function FactoryPreview() {
   const ended = state.day >= state.maxDays || state.cash <= 0;
   return <main className="visual-page">
     <div className="visual-wrap">
-      <FactoryVisualization state={state} playing={playing} speed={speed} layout={layout} background={background}/>
+      <FactoryVisualization state={state} playing={playing} speed={speed}/>
       <div className="preview-controls" aria-label="Simulation controls">
         <span className="preview-day">DAY <strong>{state.day.toString().padStart(2, "0")}</strong> <span>/ {state.maxDays}</span></span>
         <div className="preview-actions">
@@ -56,7 +45,6 @@ function FactoryPreview() {
           <Button variant="outline" aria-label={`Speed ${speed} times; change speed`} title="Change speed" onClick={() => setSpeed(current => current === 1 ? 2 : current === 2 ? 4 : 1)}><Gauge size={15}/>{speed}×</Button>
         </div>
       </div>
-      <FactoryLayoutStudio layout={layout} background={background} onChange={setLayout} onBackgroundChange={setBackground}/>
     </div>
   </main>;
 }

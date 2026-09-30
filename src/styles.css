@@ -65,7 +65,7 @@
 .factory-scene {position:relative; width:100%; aspect-ratio:2.4; min-height:260px; max-height:640px; overflow:hidden; isolation:isolate; background:var(--factory-ink);}
 .factory-background {position:absolute; inset:0; width:100%;height:100%;object-fit:cover;}
 .factory-scene-vignette {position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,color-mix(in oklab,var(--factory-ink) 28%,transparent),transparent 30%,transparent 72%,color-mix(in oklab,var(--factory-ink) 22%,transparent));}
-.stage-pin {position:absolute;top:5%;z-index:3;transform:translateX(-50%);min-width:86px;padding:5px 9px 4px;background:var(--factory-glass);border:1px solid var(--border);border-radius:3px;box-shadow:0 2px 8px color-mix(in oklab,var(--factory-ink) 18%,transparent);text-align:center;white-space:nowrap;}
+.stage-pin {position:absolute;top:var(--label-y);z-index:3;transform:translateX(-50%);min-width:86px;padding:5px 9px 4px;background:var(--factory-glass);border:1px solid var(--border);border-radius:3px;box-shadow:0 2px 8px color-mix(in oklab,var(--factory-ink) 18%,transparent);text-align:center;white-space:nowrap;}
 .stage-pin-top {display:flex;align-items:center;justify-content:center;gap:5px;font-size:10px;font-weight:900;line-height:1.25;color:var(--factory-ink);}
 .stage-pin-bottom {font:500 9px var(--font-mono);color:var(--factory-green);margin-top:2px;}
 .stage-bottleneck {border-color:var(--factory-amber);}
@@ -74,11 +74,11 @@
 .stage-broken .stage-pin-bottom {color:var(--destructive);}
 .stage-pin:after {content:"";position:absolute;top:100%;left:50%;height:clamp(14px,3vw,35px);border-left:1px solid var(--factory-glass);}
 .machine-effects {position:absolute;inset:0;pointer-events:none;z-index:1;}
-.oven-warmth {position:absolute;left:35%;top:38%;width:16%;height:24%;border-radius:18%;box-shadow:inset 0 0 24px 8px color-mix(in oklab,var(--factory-amber) 40%,transparent);animation:oven-pulse 1.7s ease-in-out infinite alternate;}
-.icing-action {position:absolute;left:65.8%;top:64%;width:4px;height:12%;border-radius:50%;background:color-mix(in oklab,var(--primary) 76%,transparent);transform-origin:top;animation:icing-pulse 1.4s ease-in-out infinite;}
-.packer-action {position:absolute;left:80.8%;top:40%;width:8%;height:3px;background:color-mix(in oklab,var(--factory-ink) 45%,transparent);animation:packer-pulse 1.6s ease-in-out infinite;}
+.oven-warmth {position:absolute;top:38%;width:16%;height:24%;transform:translateX(-50%);border-radius:18%;box-shadow:inset 0 0 24px 8px color-mix(in oklab,var(--factory-amber) 40%,transparent);animation:oven-pulse 1.7s ease-in-out infinite alternate;}
+.icing-action {position:absolute;width:4px;height:12%;border-radius:50%;background:color-mix(in oklab,var(--primary) 76%,transparent);transform-origin:top;animation:icing-pulse 1.4s ease-in-out infinite;}
+.packer-action {position:absolute;top:40%;width:8%;height:3px;transform:translateX(-50%);background:color-mix(in oklab,var(--factory-ink) 45%,transparent);animation:packer-pulse 1.6s ease-in-out infinite;}
 .belt-products {position:absolute;inset:0;z-index:2;pointer-events:none;}
-.belt-products img {position:absolute;width:clamp(19px,3.4vw,51px);height:auto;left:var(--from);bottom:19%;opacity:0;filter:drop-shadow(0 2px 3px color-mix(in oklab,var(--factory-ink) 28%,transparent));animation:product-flow var(--cycle) linear var(--delay) infinite;}
+.belt-products img {position:absolute;width:clamp(19px,3.4vw,51px);height:auto;bottom:var(--belt-y);transform:translateX(-50%) scale(var(--product-scale));transform-origin:center bottom;filter:drop-shadow(0 2px 3px color-mix(in oklab,var(--factory-ink) 28%,transparent));will-change:left;}
 .scene-left-label,.scene-right-label {position:absolute;z-index:3;bottom:5%;background:var(--factory-glass);border-radius:3px;padding:7px 10px;box-shadow:0 2px 8px color-mix(in oklab,var(--factory-ink) 16%,transparent);font:700 9px var(--font-mono);}
 .scene-left-label {left:2%;display:grid;gap:2px;}
 .scene-left-label strong,.scene-right-label strong {font:900 18px var(--font-sans);color:var(--factory-green);line-height:1;}
@@ -98,7 +98,6 @@
 .preview-controls {display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 0;}
 .preview-day {font:500 11px var(--font-mono);color:var(--muted-foreground);}.preview-day strong {font:900 20px var(--font-sans);color:var(--foreground);}.preview-day span {font-size:10px;}
 .preview-actions {display:flex;align-items:center;gap:6px;}.preview-actions button {height:36px;}.preview-actions button:last-child {padding:0 11px;}
-@keyframes product-flow {0% {left:var(--from);opacity:0;}15%,85% {opacity:1;}100% {left:var(--to);opacity:0;}}
 @keyframes oven-pulse {from {opacity:.15;}to {opacity:.85;}}
 @keyframes icing-pulse {0%,45%,100% {opacity:0;transform:scaleY(.15);}60%,85% {opacity:.75;transform:scaleY(1);}}
 @keyframes packer-pulse {0%,50%,100% {transform:translateY(0);}70% {transform:translateY(12px);}}
@@ -107,8 +106,8 @@
   .factory-scene {min-height:260px;aspect-ratio:1.55;}.factory-background {object-fit:fill;}
   .stage-pin {top:6%;min-width:0;padding:4px 3px;width:22%;}.stage-pin-top {font-size:8px;}.stage-pin-bottom {font-size:8px;}.stage-pin:after {height:12px;}
   .scene-left-label,.scene-right-label {bottom:4%;padding:5px;font-size:7px;}.scene-left-label strong,.scene-right-label strong {font-size:12px;}.scene-right-label svg {display:none;}
-  .belt-products img {width:clamp(16px,4vw,27px);bottom:20%;}
+  .belt-products img {width:clamp(16px,4vw,27px);}
   .factory-rail {grid-template-columns:repeat(3,minmax(0,1fr));}.rail-cell {padding:10px 9px;border-bottom:1px solid var(--border);}.rail-cell:nth-child(3) {border-right:0;}.rail-cell:nth-child(n+4) {border-bottom:0;}.rail-cell strong {font-size:16px;}.rail-cell .constraint-value {font-size:13px;}.rail-cell > span {font-size:8px;}
   .factory-footer {font-size:9px;}.factory-footer span:last-child {margin-left:auto;}
 }
-@media (prefers-reduced-motion:reduce) {.belt-products img {animation:none;opacity:1;left:var(--from);}.machine-effects i {animation:none;}}
+@media (prefers-reduced-motion:reduce) {.machine-effects i {animation:none;}}
