@@ -49,7 +49,8 @@ export function FactoryVisualization({
   const pathStart = Math.min(layout.intakeX, layout.dispatchX - 12);
   const pathEnd = layout.dispatchX;
   const pathLength = Math.max(12, pathEnd - pathStart);
-  const unitCount = Math.max(1, Math.min(10, Math.floor(pathLength / Math.max(5, layout.minGap))));
+  const safeGap = Math.max(layout.minGap, 5.4 * layout.productScale);
+  const unitCount = Math.max(1, Math.min(10, Math.floor(pathLength / safeGap)));
   const cycle = Math.max(2.2, Math.min(16, (900 / Math.max(25, theoretical)) / (speed * layout.speedScale)));
 
   const [phase, setPhase] = useState(0);
