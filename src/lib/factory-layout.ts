@@ -60,7 +60,7 @@ export function sanitizeLayout(input: Partial<FactoryLayout> | null | undefined)
     beltY: clamp(Number(source.beltY), 10, 55),
     intakeX,
     dispatchX,
-    productScale: clamp(Number(source.productScale), 0.4, 2.2),
+    productScale: clamp(Number(source.productScale), 0.75, 2.2),
     minGap: clamp(Number(source.minGap), 4, 25),
     speedScale: clamp(Number(source.speedScale), 0.25, 3),
     labelY: clamp(Number(source.labelY), 1, 40),
@@ -69,7 +69,7 @@ export function sanitizeLayout(input: Partial<FactoryLayout> | null | undefined)
 
 const STORAGE_KEY = "muffin-factory-layout-v1";
 
-export type StoredLayout = { layout: FactoryLayout; background: string | null };
+export type StoredLayout = { layout: FactoryLayout };
 
 export function loadStoredLayout(): StoredLayout | null {
   if (typeof window === "undefined") return null;
@@ -77,7 +77,7 @@ export function loadStoredLayout(): StoredLayout | null {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoredLayout;
-    return { layout: sanitizeLayout(parsed.layout), background: parsed.background ?? null };
+    return { layout: sanitizeLayout(parsed.layout) };
   } catch {
     return null;
   }

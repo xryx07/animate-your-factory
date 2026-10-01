@@ -1,16 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { Gauge, Pause, Play, RotateCcw, SkipForward } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { FactoryVisualization } from "@/components/FactoryVisualization";
+import { FactoryLayoutEditor } from "@/components/FactoryLayoutEditor";
+import { DEFAULT_LAYOUT, loadStoredLayout, saveStoredLayout, type FactoryLayout } from "@/lib/factory-layout";
 import { advanceDay, initialSimulation, type SimulationState } from "@/lib/muffin-simulation";
 
 export const Route = createFileRoute("/")({
   head: () => ({ meta: [
-    { title: "Muffin Factory — Live Production Line" },
-    { name: "description", content: "Watch a functional muffin production line respond to stock, machine capacity, breakdowns, deliveries and daily output." },
-    { property: "og:title", content: "Muffin Factory — Live Production Line" },
-    { property: "og:description", content: "A live muffin factory visual driven by production, inventory and machine state." },
+    { title: "Muffin Factory — Factory Floor Designer" },
+    { name: "description", content: "Upload a factory reference image and edit a collision-safe muffin production line layout." },
+    { property: "og:title", content: "Muffin Factory — Factory Floor Designer" },
+    { property: "og:description", content: "Design a live muffin factory floor from a reference image, then refine its machines and animation." },
     { property: "og:type", content: "website" },
     { name: "twitter:card", content: "summary_large_image" },
   ] }),
@@ -19,32 +19,26 @@ export const Route = createFileRoute("/")({
 
 function FactoryPreview() {
   const [state, setState] = useState<SimulationState>(initialSimulation);
-  const [playing, setPlaying] = useState(false);
-  const [speed, setSpeed] = useState(1);
+  const [layout, setLayout] = useState<FactoryLayout>(DEFAULT_LAYOUT);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!playing) return;
-    const timer = window.setInterval(() => setState(previous => advanceDay(previous)), 5000 / speed);
+    const saved = loadStoredLayout();
+    if (saved) setLayout(saved.layout);
+    setReady(true);
+  }, []);
+
+  useEffect(() => { if (ready) saveStoredLayout({ layout }); }, [ready, layout]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setState(previous => previous.day >= previous.maxDays || previous.cash <= 0 ? initialSimulation() : advanceDay(previous)), 5000);
     return () => window.clearInterval(timer);
-  }, [playing, speed]);
+  }, []);
 
-  useEffect(() => {
-    if (state.day >= state.maxDays || state.cash <= 0) setPlaying(false);
-  }, [state.day, state.maxDays, state.cash]);
-
-  const ended = state.day >= state.maxDays || state.cash <= 0;
   return <main className="visual-page">
     <div className="visual-wrap">
-      <FactoryVisualization state={state} playing={playing} speed={speed}/>
-      <div className="preview-controls" aria-label="Simulation controls">
-        <span className="preview-day">DAY <strong>{state.day.toString().padStart(2, "0")}</strong> <span>/ {state.maxDays}</span></span>
-        <div className="preview-actions">
-          <Button variant="outline" size="icon" aria-label="Reset simulation" title="Reset simulation" onClick={() => { setPlaying(false); setState(initialSimulation()); }}><RotateCcw/></Button>
-          <Button variant="default" size="icon" aria-label={playing ? "Pause simulation" : "Start simulation"} title={playing ? "Pause" : "Play"} disabled={ended} onClick={() => setPlaying(current => !current)}>{playing ? <Pause/> : <Play/>}</Button>
-          <Button variant="outline" size="icon" aria-label="Advance one day" title="Advance one day" disabled={ended} onClick={() => setState(advanceDay)}><SkipForward/></Button>
-          <Button variant="outline" aria-label={`Speed ${speed} times; change speed`} title="Change speed" onClick={() => setSpeed(current => current === 1 ? 2 : current === 2 ? 4 : 1)}><Gauge size={15}/>{speed}×</Button>
-        </div>
-      </div>
+      <FactoryVisualization state={state} playing layout={layout}/>
+      <FactoryLayoutEditor layout={layout} onChange={setLayout}/>
     </div>
   </main>;
 }

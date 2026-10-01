@@ -5,7 +5,7 @@ import bakedImage from "@/assets/muffin-baked.png";
 import icedImage from "@/assets/muffin-iced.png";
 import boxImage from "@/assets/muffin-box.png";
 import { MACHINE_CONFIG, operatingCapacity, type MachineKind, type SimulationState } from "@/lib/muffin-simulation";
-import { DEFAULT_LAYOUT, STAGE_ORDER, type FactoryLayout } from "@/lib/factory-layout";
+import { DEFAULT_LAYOUT, sanitizeLayout, STAGE_ORDER, type FactoryLayout } from "@/lib/factory-layout";
 
 const labels: Record<MachineKind, string> = { mixing: "MIXER", baking: "OVEN", icing: "ICING", packaging: "PACKER" };
 
@@ -30,6 +30,16 @@ export function FactoryVisualization({
   layout = DEFAULT_LAYOUT,
   background,
 }: FactoryVisualizationProps) {
+  const safeLayout = sanitizeLayout(layout);
+  const sceneRef = useRef<HTMLDivElement>(null);
+  const [sceneWidth, setSceneWidth] = useState(640);
+  useEffect(() => {
+    const element = sceneRef.current;
+    if (!element) return;
+    const observer = new ResizeObserver(entries => setSceneWidth(entries[0]?.contentRect.width ?? 640));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
   const capacities = STAGE_ORDER.map(kind => ({ kind, capacity: operatingCapacity(state, kind) }));
   const bottleneck = capacities.reduce((min, item) => (item.capacity < min.capacity ? item : min));
   const theoretical = Math.max(0, Math.min(state.mix, state.packagingMaterial, bottleneck.capacity));
@@ -46,12 +56,13 @@ export function FactoryVisualization({
 
   // Belt geometry. Products are spread evenly over the path, so the gap between
   // two neighbours is constant and they can never bunch up or overlap.
-  const pathStart = Math.min(layout.intakeX, layout.dispatchX - 12);
-  const pathEnd = layout.dispatchX;
+  const pathStart = safeLayout.intakeX;
+  const pathEnd = safeLayout.dispatchX;
   const pathLength = Math.max(12, pathEnd - pathStart);
-  const safeGap = Math.max(layout.minGap, 5.4 * layout.productScale);
+  const spriteWidth = Math.max(16, Math.min(51, sceneWidth * 0.034)) * safeLayout.productScale;
+  const safeGap = Math.max(safeLayout.minGap, (spriteWidth + 8) / sceneWidth * 100);
   const unitCount = Math.max(1, Math.min(10, Math.floor(pathLength / safeGap)));
-  const cycle = Math.max(2.2, Math.min(16, (900 / Math.max(25, theoretical)) / (speed * layout.speedScale)));
+  const cycle = Math.max(2.2, Math.min(16, (900 / Math.max(25, theoretical)) / (Math.max(.25, speed) * safeLayout.speedScale)));
 
   const [phase, setPhase] = useState(0);
   const frame = useRef<number>(0);
@@ -73,15 +84,15 @@ export function FactoryVisualization({
   const products = Array.from({ length: unitCount }, (_, index) => {
     const progress = ((running && !reduced ? phase : 0) + index / unitCount) % 1;
     const x = pathStart + progress * pathLength;
-    const image = x < layout.machines.icing ? bakedImage : x < layout.machines.packaging ? icedImage : boxImage;
+    const image = x < safeLayout.machines.icing ? bakedImage : x < safeLayout.machines.packaging ? icedImage : boxImage;
     const fade = Math.min(1, progress / 0.08, (1 - progress) / 0.08);
     return { x, image, opacity: Math.max(0, fade), key: index };
   });
 
   const sceneStyle = {
-    "--belt-y": `${layout.beltY}%`,
-    "--label-y": `${layout.labelY}%`,
-    "--product-scale": layout.productScale,
+    "--belt-y": `${safeLayout.beltY}%`,
+    "--label-y": `${safeLayout.labelY}%`,
+    "--product-scale": safeLayout.productScale,
   } as CSSProperties;
 
   return (
@@ -98,7 +109,7 @@ export function FactoryVisualization({
         </div>
       </div>
 
-      <div className={`factory-scene ${running ? "is-running" : ""}`} style={sceneStyle}>
+      <div ref={sceneRef} className={`factory-scene ${running ? "is-running" : ""}`} style={sceneStyle}>
         <img
           className="factory-background"
           src={background || floorImage}
@@ -115,7 +126,7 @@ export function FactoryVisualization({
             <div
               className={`stage-pin ${broken ? "stage-broken" : ""} ${running && !issue && capacity > 0 ? "stage-running" : ""} ${kind === bottleneck.kind && capacity > 0 && !issue ? "stage-bottleneck" : ""}`}
               key={kind}
-              style={{ left: `${layout.machines[kind]}%` }}
+               style={{ left: `${safeLayout.machines[kind]}%` }}
               title={`${MACHINE_CONFIG[kind].label}: ${capacity} muffins per day; ${status.toLowerCase()}`}
             >
               <div className="stage-pin-top"><i /><span>{labels[kind]}</span></div>
@@ -126,9 +137,9 @@ export function FactoryVisualization({
 
         {running && (
           <div className="machine-effects" aria-hidden="true">
-            <i className="oven-warmth" style={{ left: `${layout.machines.baking}%` }} />
-            <i className="icing-action" style={{ left: `${layout.machines.icing}%`, bottom: `calc(${layout.beltY}% + 1.5%)` }} />
-            <i className="packer-action" style={{ left: `${layout.machines.packaging}%` }} />
+             <i className="oven-warmth" style={{ left: `${safeLayout.machines.baking}%` }} />
+             <i className="icing-action" style={{ left: `${safeLayout.machines.icing}%`, bottom: `calc(${safeLayout.beltY}% + 1.5%)` }} />
+             <i className="packer-action" style={{ left: `${safeLayout.machines.packaging}%` }} />
           </div>
         )}
 
