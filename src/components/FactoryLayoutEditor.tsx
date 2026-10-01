@@ -43,8 +43,7 @@ export function FactoryLayoutEditor({ layout, onChange }: Props) {
     try {
       const result = await analyzeFactoryImage({ data: { image } });
       onChange(sanitizeLayout(result.layout));
-      // A crop may describe only the conveyor; use it for coordinates without
-      // stretching it into a full factory backdrop.
+      // A reference crop supplies coordinates only; the floor art stays intact.
       setMessage(result.note || "Layout generated. Adjust the positions below.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Image analysis failed.");

@@ -28,7 +28,7 @@ function FactoryPreview() {
     setReady(true);
   }, []);
 
-  useEffect(() => { if (ready) saveStoredLayout({ layout, background: null }); }, [ready, layout]);
+  useEffect(() => { if (ready) saveStoredLayout({ layout }); }, [ready, layout]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setState(previous => previous.day >= previous.maxDays || previous.cash <= 0 ? initialSimulation() : advanceDay(previous)), 5000);
