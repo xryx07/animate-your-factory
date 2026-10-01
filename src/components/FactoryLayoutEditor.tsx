@@ -45,7 +45,8 @@ export function FactoryLayoutEditor({ layout, onChange, background, onBackground
     try {
       const result = await analyzeFactoryImage({ data: { image } });
       onChange(sanitizeLayout(result.layout));
-      onBackgroundChange(image);
+      // A crop may describe only the conveyor; use it for coordinates without
+      // stretching it into a full factory backdrop.
       setMessage(result.note || "Layout generated. Adjust the positions below.");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Image analysis failed.");
@@ -76,6 +77,6 @@ export function FactoryLayoutEditor({ layout, onChange, background, onBackground
         return <label className="editor-field" key={field}><span>{label[field]} <output>{typeof value === "number" ? (step < 1 ? value.toFixed(step < .1 ? 2 : 1) : value.toFixed(0)) : value}{field === "productScale" || field === "speedScale" ? "×" : "%"}</output></span><input type="range" min={min} max={max} step={step} value={value} onChange={event => update(field, Number(event.target.value))}/></label>;
       })}
     </div>
-    {background && <p className="editor-source">Uploaded image is the floor backdrop. Layout edits appear above it immediately.</p>}
+    {background && <p className="editor-source">Custom floor backdrop active.</p>}
   </section>;
 }

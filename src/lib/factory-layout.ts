@@ -77,7 +77,7 @@ export function loadStoredLayout(): StoredLayout | null {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as StoredLayout;
-    return { layout: sanitizeLayout(parsed.layout), background: parsed.background ?? null };
+    return { layout: sanitizeLayout(parsed.layout), background: null };
   } catch {
     return null;
   }
