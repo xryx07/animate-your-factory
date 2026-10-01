@@ -71,7 +71,7 @@ export function FactoryLayoutEditor({ layout, onChange }: Props) {
     <div className="editor-fields">
       {fields.map(field => {
         const value = STAGE_ORDER.some(kind => kind === field) ? layout.machines[field as keyof FactoryLayout["machines"]] : layout[field as keyof Omit<FactoryLayout, "machines">];
-        const [min, max, step] = ranges[field];
+        const [min, max, step] = ranges[field] ?? [0, 100, 1];
         return <label className="editor-field" key={field}><span>{label[field]} <output>{typeof value === "number" ? (step < 1 ? value.toFixed(step < .1 ? 2 : 1) : value.toFixed(0)) : value}{field === "productScale" || field === "speedScale" ? "×" : "%"}</output></span><input type="range" min={min} max={max} step={step} value={value} onChange={event => update(field, Number(event.target.value))}/></label>;
       })}
     </div>

@@ -9,7 +9,8 @@ export const analyzeFactoryImage = createServerFn({ method: "POST" })
   .inputValidator((value) => inputSchema.parse(value))
   .handler(async ({ data }) => {
     const match = IMAGE_PATTERN.exec(data.image);
-    if (!match || match[2].length > 7_000_000 || match[2].length < 64) {
+    const encoded = match?.[2];
+    if (!encoded || encoded.length > 7_000_000 || encoded.length < 64) {
       throw new Error("Upload a PNG, JPG or WebP image under 5 MB.");
     }
     const key = process.env["LOVABLE_API_KEY"];
