@@ -20,16 +20,15 @@ export const Route = createFileRoute("/")({
 function FactoryPreview() {
   const [state, setState] = useState<SimulationState>(initialSimulation);
   const [layout, setLayout] = useState<FactoryLayout>(DEFAULT_LAYOUT);
-  const [background, setBackground] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const saved = loadStoredLayout();
-    if (saved) { setLayout(saved.layout); setBackground(saved.background); }
+    if (saved) setLayout(saved.layout);
     setReady(true);
   }, []);
 
-  useEffect(() => { if (ready) saveStoredLayout({ layout, background }); }, [ready, layout, background]);
+  useEffect(() => { if (ready) saveStoredLayout({ layout, background: null }); }, [ready, layout]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setState(previous => previous.day >= previous.maxDays || previous.cash <= 0 ? initialSimulation() : advanceDay(previous)), 5000);
@@ -38,8 +37,8 @@ function FactoryPreview() {
 
   return <main className="visual-page">
     <div className="visual-wrap">
-      <FactoryVisualization state={state} playing layout={layout} background={background}/>
-      <FactoryLayoutEditor layout={layout} onChange={setLayout} background={background} onBackgroundChange={setBackground}/>
+      <FactoryVisualization state={state} playing layout={layout}/>
+      <FactoryLayoutEditor layout={layout} onChange={setLayout}/>
     </div>
   </main>;
 }

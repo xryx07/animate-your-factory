@@ -7,14 +7,12 @@ import { DEFAULT_LAYOUT, sanitizeLayout, STAGE_ORDER, type FactoryLayout } from 
 type Props = {
   layout: FactoryLayout;
   onChange: (layout: FactoryLayout) => void;
-  background: string | null;
-  onBackgroundChange: (background: string | null) => void;
 };
 
 const label: Record<string, string> = { mixing: "Mixer", baking: "Oven", icing: "Icing", packaging: "Packer", beltY: "Belt height", intakeX: "Muffins enter", dispatchX: "Muffins exit", productScale: "Muffin size", minGap: "Minimum gap", speedScale: "Belt speed", labelY: "Label height" };
-const ranges: Record<string, [number, number, number]> = { mixing: [5, 68, 1], baking: [14, 77, 1], icing: [23, 86, 1], packaging: [32, 96, 1], beltY: [10, 55, 1], intakeX: [0, 75, 1], dispatchX: [60, 100, 1], productScale: [0.4, 2.2, 0.1], minGap: [4, 25, 0.5], speedScale: [0.25, 3, 0.05], labelY: [1, 40, 1] };
+const ranges: Record<string, [number, number, number]> = { mixing: [5, 68, 1], baking: [14, 77, 1], icing: [23, 86, 1], packaging: [32, 96, 1], beltY: [10, 55, 1], intakeX: [0, 75, 1], dispatchX: [60, 100, 1], productScale: [0.75, 2.2, 0.05], minGap: [4, 25, 0.5], speedScale: [0.25, 3, 0.05], labelY: [1, 40, 1] };
 
-export function FactoryLayoutEditor({ layout, onChange, background, onBackgroundChange }: Props) {
+export function FactoryLayoutEditor({ layout, onChange }: Props) {
   const picker = useRef<HTMLInputElement>(null);
   const [image, setImage] = useState<string | null>(null);
   const [fileName, setFileName] = useState("");
@@ -61,7 +59,7 @@ export function FactoryLayoutEditor({ layout, onChange, background, onBackground
 
   const fields = [...STAGE_ORDER, "beltY", "intakeX", "dispatchX", "productScale", "minGap", "speedScale", "labelY"];
   return <section className="layout-editor" aria-label="Factory layout editor">
-    <div className="editor-heading"><div><span className="editor-kicker">FACTORY VISUAL</span><h2>Layout editor</h2></div><Button variant="ghost" size="sm" onClick={() => { onChange(DEFAULT_LAYOUT); onBackgroundChange(null); setImage(null); setFileName(""); setMessage("Default layout restored."); }}><RotateCcw size={14}/> Reset</Button></div>
+    <div className="editor-heading"><div><span className="editor-kicker">FACTORY VISUAL</span><h2>Layout editor</h2></div><Button variant="ghost" size="sm" onClick={() => { onChange(DEFAULT_LAYOUT); setImage(null); setFileName(""); setMessage("Default layout restored."); }}><RotateCcw size={14}/> Reset</Button></div>
     <div className="editor-import">
       <input ref={picker} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" aria-label="Factory reference image" onChange={handleFile}/>
       <Button variant="outline" onClick={() => picker.current?.click()}><Upload size={15}/> {fileName ? "Change image" : "Upload reference"}</Button>
@@ -77,6 +75,5 @@ export function FactoryLayoutEditor({ layout, onChange, background, onBackground
         return <label className="editor-field" key={field}><span>{label[field]} <output>{typeof value === "number" ? (step < 1 ? value.toFixed(step < .1 ? 2 : 1) : value.toFixed(0)) : value}{field === "productScale" || field === "speedScale" ? "×" : "%"}</output></span><input type="range" min={min} max={max} step={step} value={value} onChange={event => update(field, Number(event.target.value))}/></label>;
       })}
     </div>
-    {background && <p className="editor-source">Custom floor backdrop active.</p>}
   </section>;
 }

@@ -60,7 +60,7 @@ export function sanitizeLayout(input: Partial<FactoryLayout> | null | undefined)
     beltY: clamp(Number(source.beltY), 10, 55),
     intakeX,
     dispatchX,
-    productScale: clamp(Number(source.productScale), 0.4, 2.2),
+    productScale: clamp(Number(source.productScale), 0.75, 2.2),
     minGap: clamp(Number(source.minGap), 4, 25),
     speedScale: clamp(Number(source.speedScale), 0.25, 3),
     labelY: clamp(Number(source.labelY), 1, 40),
