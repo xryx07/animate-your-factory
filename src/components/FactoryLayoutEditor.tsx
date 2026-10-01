@@ -66,7 +66,7 @@ export function FactoryLayoutEditor({ layout, onChange }: Props) {
       <span className="editor-filename">{fileName || "PNG, JPG or WebP · up to 5 MB"}</span>
       <Button disabled={!image || busy} onClick={detect}><Sparkles size={15}/>{busy ? "Analyzing…" : "Generate layout"}</Button>
     </div>
-    {image && <div className="editor-reference"><ImagePlus size={14}/><span>{fileName}</span><span>Ready for analysis</span></div>}
+    {image && <div className="editor-reference"><img src={image} alt="Uploaded factory reference"/><span><ImagePlus size={14}/>{fileName}</span><span>Reference selected</span></div>}
     {message && <p className="editor-message" role="status">{message}</p>}
     <div className="editor-fields">
       {fields.map(field => {
