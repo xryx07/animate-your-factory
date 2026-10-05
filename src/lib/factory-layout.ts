@@ -23,7 +23,7 @@ export const STAGE_ORDER: MachineKind[] = ["mixing", "baking", "icing", "packagi
 export const DEFAULT_LAYOUT: FactoryLayout = {
   machines: { mixing: 19, baking: 43, icing: 66, packaging: 84 },
   beltY: 25,
-  intakeX: 24,
+  intakeX: 7,
   dispatchX: 98,
   productScale: 1,
   minGap: 7,
@@ -52,8 +52,8 @@ export function sanitizeLayout(input: Partial<FactoryLayout> | null | undefined)
     previous = ordered[kind] + minStageGap;
   });
 
-  const intakeX = clamp(Number(source.intakeX), ordered.mixing + 2, ordered.baking - 3);
-  const dispatchX = clamp(Number(source.dispatchX), intakeX + 12, 100);
+  const intakeX = clamp(Number(source.intakeX), 0, ordered.mixing - 3);
+  const dispatchX = clamp(Number(source.dispatchX), ordered.packaging + 3, 100);
 
   return {
     machines: ordered,

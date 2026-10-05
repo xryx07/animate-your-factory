@@ -1,17 +1,19 @@
 import { Activity, AlertTriangle, Check, Factory, PackageCheck, Truck, Wrench } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import floorImage from "@/assets/factory-line.jpg";
+import batterImage from "@/assets/muffin-batter.png";
 import bakedImage from "@/assets/muffin-baked.png";
 import icedImage from "@/assets/muffin-iced.png";
 import boxImage from "@/assets/muffin-box.png";
 import { MACHINE_CONFIG, operatingCapacity, type MachineKind, type SimulationState } from "@/lib/muffin-simulation";
 import { DEFAULT_LAYOUT, sanitizeLayout, STAGE_ORDER, type FactoryLayout } from "@/lib/factory-layout";
+import { createFactoryMotion } from "@/lib/factory-motion";
 
 const labels: Record<MachineKind, string> = { mixing: "MIXER", baking: "OVEN", icing: "ICING", packaging: "PACKER" };
 
 function MachineCondition({ kind, machine, capacity, running, waiting, constrained, x, width }: {
   kind: MachineKind; machine: SimulationState["machines"][MachineKind]; capacity: number;
-  running: boolean; waiting: boolean; constrained: boolean; x: number; width: number;
+   running: boolean; waiting: boolean; constrained: boolean; x: number; width: number;
 }) {
   const broken = machine.broken > 0;
   const repairing = broken && machine.repairDays > 0;
@@ -93,15 +95,11 @@ export function FactoryVisualization({
         ? `${MACHINE_CONFIG[bottleneck.kind].label} offline`
         : null;
 
-  // Belt geometry. Products are spread evenly over the path, so the gap between
-  // two neighbours is constant and they can never bunch up or overlap.
-  const pathStart = safeLayout.intakeX;
-  const pathEnd = safeLayout.dispatchX;
-  const pathLength = Math.max(12, pathEnd - pathStart);
+  // Reserve a full processing stop plus safe travel spacing between arrivals.
   const spriteWidth = Math.max(16, Math.min(51, sceneWidth * 0.034)) * safeLayout.productScale;
   const safeGap = Math.max(safeLayout.minGap, (spriteWidth + 8) / sceneWidth * 100);
-  const unitCount = Math.max(1, Math.min(10, Math.floor(pathLength / safeGap)));
-  const cycle = Math.max(2.2, Math.min(16, (900 / Math.max(25, theoretical)) / (Math.max(.25, speed) * safeLayout.speedScale)));
+  const motion = createFactoryMotion(safeLayout, safeGap);
+  const cycle = Math.max(8, Math.min(28, (1500 / Math.max(25, theoretical)) / (Math.max(.25, speed) * safeLayout.speedScale)));
 
   const [phase, setPhase] = useState(0);
   const frame = useRef<number>(0);
@@ -111,22 +109,21 @@ export function FactoryVisualization({
     if (!running || reduced) return;
     let previous = performance.now();
     const tick = (now: number) => {
-      const delta = (now - previous) / 1000;
+      const delta = Math.min(.05, (now - previous) / 1000);
       previous = now;
-      setPhase(current => (current + delta / cycle) % 1);
+      setPhase(current => current + delta / cycle);
       frame.current = requestAnimationFrame(tick);
     };
     frame.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame.current);
   }, [running, reduced, cycle]);
 
-  const products = Array.from({ length: unitCount }, (_, index) => {
-    const progress = (phase + index / unitCount) % 1;
-    const x = pathStart + progress * pathLength;
-    const image = x < safeLayout.machines.icing ? bakedImage : x < safeLayout.machines.packaging ? icedImage : boxImage;
-    const fade = Math.min(1, progress / 0.08, (1 - progress) / 0.08);
-    return { x, image, opacity: Math.max(0, fade), key: index };
+  const products = Array.from({ length: motion.count }, (_, index) => {
+    const sample = motion.sample(reduced ? 1 : phase, index);
+    const image = sample.completed < 2 ? batterImage : sample.completed < 3 ? bakedImage : sample.completed < 4 ? icedImage : boxImage;
+    return { ...sample, image, opacity: sample.visible ? sample.fade : 0, key: index };
   });
+  const processing = (kind: MachineKind) => products.find(product => product.visible && product.stage === kind);
 
   const sceneStyle = {
     "--belt-y": `${safeLayout.beltY}%`,
@@ -165,17 +162,22 @@ export function FactoryVisualization({
           const next = STAGE_ORDER[index + 1];
           const width = Math.min(15, previous ? x - safeLayout.machines[previous] - 1 : x * 2 - 1, next ? safeLayout.machines[next] - x - 1 : (100 - x) * 2 - 1);
           return (
-            <MachineCondition key={kind} kind={kind} machine={machine} capacity={capacity} running={running} waiting={Boolean(issue)} constrained={kind === bottleneck.kind && capacity > 0 && !issue} x={x} width={width}/>
+            <MachineCondition key={kind} kind={kind} machine={machine} capacity={capacity} running={running && Boolean(processing(kind))} waiting={Boolean(issue)} constrained={kind === bottleneck.kind && capacity > 0 && !issue} x={x} width={width}/>
           );
         })}
 
-        {running && (
-          <div className="machine-effects" aria-hidden="true">
-             <i className="oven-warmth" style={{ left: `${safeLayout.machines.baking}%` }} />
-             <i className="icing-action" style={{ left: `${safeLayout.machines.icing}%`, bottom: `calc(${safeLayout.beltY}% + 1.5%)` }} />
-             <i className="packer-action" style={{ left: `${safeLayout.machines.packaging}%` }} />
-          </div>
-        )}
+        <div className="machine-effects" aria-hidden="true">
+          {STAGE_ORDER.map(kind => {
+            const product = processing(kind);
+            if (!product || !running) return null;
+            return <div key={kind} className={`machine-processing processing-${kind}`} data-machine={kind} style={{ left: `${safeLayout.machines[kind]}%`, "--process": product.processing, "--turn": `${product.processing * 1080}deg` } as CSSProperties}>
+              {kind === "mixing" && <><i className="mixer-spindle"/><i className="mixer-paddle"/><i className="mixer-paddle paddle-second"/></>}
+              {kind === "baking" && <><i className="oven-heat"/><i className="oven-fan"/></>}
+              {kind === "icing" && <><i className="icing-nozzle"/><i className="icing-stream"/></>}
+              {kind === "packaging" && <><i className="packing-jaw jaw-left"/><i className="packing-jaw jaw-right"/></>}
+            </div>;
+          })}
+        </div>
 
         <div className="belt-products" aria-hidden="true">
           {products.map(product => (
@@ -183,7 +185,9 @@ export function FactoryVisualization({
               key={product.key}
               src={product.image}
               alt=""
-              style={{ left: `${product.x}%`, opacity: running ? product.opacity : 0.85 }}
+              data-product={product.key} data-stage={product.stage || "travel"} data-completed={product.completed}
+              className={product.stage ? `product-processing product-${product.stage}` : ""}
+              style={{ left: `${product.x}%`, opacity: product.opacity }}
             />
           ))}
         </div>
