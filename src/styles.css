@@ -98,6 +98,20 @@
 @keyframes repair-complete {from {opacity:0;transform:translateX(-50%) scale(.7);}to {opacity:1;transform:translateX(-50%) scale(1);}}
 .stage-pin:after {content:"";position:absolute;top:100%;left:50%;height:clamp(14px,3vw,35px);border-left:1px solid var(--factory-glass);}
 .machine-effects {position:absolute;inset:0;pointer-events:none;z-index:1;}
+.machine-processing {position:absolute;top:0;bottom:0;width:16%;transform:translateX(-50%);}
+.machine-processing i {position:absolute;display:block;}
+.mixer-spindle {left:49%;top:44%;height:16%;width:3px;background:var(--factory-ink);}
+.mixer-paddle {left:24%;top:57%;width:52%;height:5px;border:1px solid var(--factory-glass);border-radius:50%;background:var(--factory-ink);transform:rotateY(var(--turn));}
+.mixer-paddle.paddle-second {top:59%;transform:rotateY(calc(var(--turn) + 90deg));}
+.oven-heat {inset:42% 6% 36%;background:color-mix(in oklab,var(--factory-amber) 28%,transparent);box-shadow:inset 0 0 20px var(--factory-amber);opacity:calc(.4 + var(--process) * .6);}
+.oven-fan {top:51%;left:42%;width:16%;aspect-ratio:1;border:2px dashed var(--factory-ink);border-radius:50%;transform:rotate(var(--turn));}
+.icing-nozzle {left:48%;bottom:calc(var(--belt-y) + 4%);width:6%;height:14%;background:var(--factory-ink);border:1px solid var(--factory-glass);transform:translateY(calc(var(--process) * 4px));}
+.icing-stream {left:50%;bottom:calc(var(--belt-y) + 1%);width:4%;height:8%;background:var(--primary);border-radius:40%;transform-origin:top;transform:scaleY(calc(.25 + var(--process) * .75));}
+.packing-jaw {bottom:calc(var(--belt-y) + 1%);width:17%;height:13%;background:var(--factory-green);border:2px solid var(--factory-ink);border-radius:2px;}
+.jaw-left {left:20%;transform:translateX(calc(var(--process) * 10px));}.jaw-right {right:20%;transform:translateX(calc(var(--process) * -10px));}
+.is-running .product-mixing {animation:product-mix .35s ease-in-out infinite;}
+.is-running .product-baking {filter:drop-shadow(0 0 5px var(--factory-amber));}
+@keyframes product-mix {0%,100% {transform:translateX(-50%) scale(var(--product-scale)) rotate(-5deg);}50% {transform:translateX(-50%) scale(var(--product-scale)) rotate(5deg);}}
 .oven-warmth {position:absolute;top:38%;width:16%;height:24%;transform:translateX(-50%);border-radius:18%;box-shadow:inset 0 0 24px 8px color-mix(in oklab,var(--factory-amber) 40%,transparent);animation:oven-pulse 1.7s ease-in-out infinite alternate;}
 .icing-action {position:absolute;width:4px;height:12%;border-radius:50%;background:color-mix(in oklab,var(--primary) 76%,transparent);transform-origin:top;animation:icing-pulse 1.4s ease-in-out infinite;}
 .packer-action {position:absolute;top:40%;width:8%;height:3px;transform:translateX(-50%);background:color-mix(in oklab,var(--factory-ink) 45%,transparent);animation:packer-pulse 1.6s ease-in-out infinite;}
@@ -147,4 +161,4 @@
   .factory-footer {font-size:9px;}.factory-footer span:last-child {margin-left:auto;}
    .editor-fields {grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}
 }
-@media (prefers-reduced-motion:reduce) {.machine-effects i,.machine-condition-effect *,.stage-repairing .stage-pin-bottom svg {animation:none;}.machine-smoke i {opacity:.35;}.machine-health>span,.machine-repair-progress span {transition:none;}}
+@media (prefers-reduced-motion:reduce) {.machine-effects i,.machine-condition-effect *,.stage-repairing .stage-pin-bottom svg,.is-running .product-processing {animation:none;}.machine-smoke i {opacity:.35;}.machine-health>span,.machine-repair-progress span {transition:none;}}
