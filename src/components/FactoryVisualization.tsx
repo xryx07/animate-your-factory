@@ -1,4 +1,4 @@
-import { Activity, AlertTriangle, Factory, PackageCheck, Truck } from "lucide-react";
+import { Activity, AlertTriangle, Check, Factory, PackageCheck, Truck, Wrench } from "lucide-react";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import floorImage from "@/assets/factory-line.jpg";
 import bakedImage from "@/assets/muffin-baked.png";
@@ -8,6 +8,45 @@ import { MACHINE_CONFIG, operatingCapacity, type MachineKind, type SimulationSta
 import { DEFAULT_LAYOUT, sanitizeLayout, STAGE_ORDER, type FactoryLayout } from "@/lib/factory-layout";
 
 const labels: Record<MachineKind, string> = { mixing: "MIXER", baking: "OVEN", icing: "ICING", packaging: "PACKER" };
+
+function MachineCondition({ kind, machine, capacity, running, waiting, constrained, x, width }: {
+  kind: MachineKind; machine: SimulationState["machines"][MachineKind]; capacity: number;
+  running: boolean; waiting: boolean; constrained: boolean; x: number; width: number;
+}) {
+  const broken = machine.broken > 0;
+  const repairing = broken && machine.repairDays > 0;
+  const health = machine.active > 0 ? Math.round(Math.max(0, machine.active - machine.broken) / machine.active * 100) : 0;
+  const previousBroken = useRef(broken);
+  const [recovered, setRecovered] = useState(false);
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (previousBroken.current && !broken) {
+      setRecovered(true);
+      timer = setTimeout(() => setRecovered(false), 2400);
+    } else if (broken) setRecovered(false);
+    previousBroken.current = broken;
+    return () => { if (timer) clearTimeout(timer); };
+  }, [broken]);
+  const duration = kind === "mixing" || kind === "baking" ? 2 : 1;
+  const repairProgress = Math.round(Math.max(0, Math.min(1, 1 - machine.repairDays / duration)) * 100);
+  const status = repairing ? "REPAIRING" : broken ? "FAILED" : machine.active === 0 ? "OFF" : recovered ? "RESTORED" : waiting ? "WAITING" : running ? "RUNNING" : "READY";
+  const description = `${MACHINE_CONFIG[kind].label}: ${status.toLowerCase()}, health ${health}% (${Math.max(0, machine.active - machine.broken)} of ${machine.active} active units working)${repairing ? `, ${machine.repairDays} days remaining` : ""}`;
+  return <>
+    <div className={`stage-pin ${broken ? "stage-broken" : ""} ${repairing ? "stage-repairing" : ""} ${recovered ? "stage-restored" : ""} ${running && capacity > 0 ? "stage-running" : ""} ${constrained ? "stage-bottleneck" : ""}`}
+      style={{ left: `${x}%`, "--pin-width": `${width}%`, "--health": `${health}%`, "--repair-progress": `${repairProgress}%` } as CSSProperties}
+      title={description} aria-label={description}>
+      <div className="stage-pin-top"><i /><span>{labels[kind]}</span></div>
+      <div className="machine-health" role="progressbar" aria-label={`${MACHINE_CONFIG[kind].label} health`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={health}><span /></div>
+      <div className="machine-health-value"><span>HP</span><strong>{health}%</strong></div>
+      <div className="stage-pin-bottom">{repairing ? <><Wrench size={9}/>{machine.repairDays}d</> : broken ? "FAILED" : recovered ? <><Check size={9}/>OK</> : `${capacity}/day`}</div>
+      {repairing && <div className="machine-repair-progress" role="progressbar" aria-label={`${MACHINE_CONFIG[kind].label} repair`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={repairProgress} aria-valuetext={`${machine.repairDays} days remaining`}><span /></div>}
+    </div>
+    {(broken || recovered) && <div className={`machine-condition-effect ${broken ? "condition-failed" : "condition-restored"} ${repairing ? "condition-repairing" : ""}`} style={{ left: `${x}%` }} aria-hidden="true">
+      {broken && <div className="machine-smoke"><i/><i/><i/></div>}
+      <div className="machine-condition-icon">{repairing ? <Wrench size={18}/> : broken ? <AlertTriangle size={18}/> : <Check size={18}/>}</div>
+    </div>}
+  </>;
+}
 
 export type FactoryVisualizationProps = {
   state: SimulationState;
@@ -82,7 +121,7 @@ export function FactoryVisualization({
   }, [running, reduced, cycle]);
 
   const products = Array.from({ length: unitCount }, (_, index) => {
-    const progress = ((running && !reduced ? phase : 0) + index / unitCount) % 1;
+    const progress = (phase + index / unitCount) % 1;
     const x = pathStart + progress * pathLength;
     const image = x < safeLayout.machines.icing ? bakedImage : x < safeLayout.machines.packaging ? icedImage : boxImage;
     const fade = Math.min(1, progress / 0.08, (1 - progress) / 0.08);
@@ -120,18 +159,13 @@ export function FactoryVisualization({
         {STAGE_ORDER.map(kind => {
           const machine = state.machines[kind];
           const capacity = operatingCapacity(state, kind);
-          const broken = machine.broken > 0;
-          const status = broken ? "REPAIR" : machine.active === 0 ? "OFF" : issue ? "WAITING" : running ? "RUNNING" : "READY";
+          const index = STAGE_ORDER.indexOf(kind);
+          const x = safeLayout.machines[kind];
+          const previous = STAGE_ORDER[index - 1];
+          const next = STAGE_ORDER[index + 1];
+          const width = Math.min(15, previous ? x - safeLayout.machines[previous] - 1 : x * 2 - 1, next ? safeLayout.machines[next] - x - 1 : (100 - x) * 2 - 1);
           return (
-            <div
-              className={`stage-pin ${broken ? "stage-broken" : ""} ${running && !issue && capacity > 0 ? "stage-running" : ""} ${kind === bottleneck.kind && capacity > 0 && !issue ? "stage-bottleneck" : ""}`}
-              key={kind}
-               style={{ left: `${safeLayout.machines[kind]}%` }}
-              title={`${MACHINE_CONFIG[kind].label}: ${capacity} muffins per day; ${status.toLowerCase()}`}
-            >
-              <div className="stage-pin-top"><i /><span>{labels[kind]}</span></div>
-              <div className="stage-pin-bottom">{broken ? `${machine.repairDays}d repair` : `${capacity}/day`}</div>
-            </div>
+            <MachineCondition key={kind} kind={kind} machine={machine} capacity={capacity} running={running} waiting={Boolean(issue)} constrained={kind === bottleneck.kind && capacity > 0 && !issue} x={x} width={width}/>
           );
         })}
 
