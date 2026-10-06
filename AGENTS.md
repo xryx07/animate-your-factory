@@ -14,3 +14,4 @@
 - Render products from a shared clock and a piecewise transfer/dwell schedule; reserve processing duration plus safe travel distance between arrivals to prevent overlap while machines process sequentially.
 - Keep the image-analysis editor separate from the state-fed factory illustration; this lets the host game embed the scene without editor or preview controls.
 - Derive displayed machine health from the active fleet's working-unit ratio and repair progress from remaining repair days; this avoids inventing wear or changing the host game's failure rules.
+- Keep appearance controls separate from the visualization and pass appearance as data; store preview preferences locally and apply lighting/style filters without changing machine or product motion.
