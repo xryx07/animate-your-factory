@@ -135,7 +135,7 @@
 .mixer-batter {left:24%;top:57%;width:52%;height:5%;background:var(--factory-batter);border-radius:50%;border:1px solid var(--factory-steel);transform:scaleX(calc(.85 + var(--stroke) * .15));}
 .oven-rack {left:22%;bottom:43%;width:56%;height:1%;background:var(--factory-steel);}
 .oven-steam {left:45%;top:37%;width:10%;height:8%;border-left:2px solid var(--factory-glass);border-right:1px solid var(--factory-glass);opacity:calc(var(--stroke) * .6);transform:translateY(calc(var(--process) * -10px));}
-.packing-jaw {bottom:40%;height:8%;background:var(--factory-steel);}
+.packing-jaw {bottom:40%;height:8%;width:5%;border-width:1px;background:var(--factory-steel);}
 .packing-seal {left:37%;bottom:49%;width:26%;height:2%;background:var(--factory-ink);transform:translateY(calc(var(--stroke) * 8px));}
 .chamber-transfer .mixer-paddle,.chamber-transfer .oven-fan {visibility:hidden;}
 .is-running .product-mixing {animation:product-mix .35s ease-in-out infinite;}

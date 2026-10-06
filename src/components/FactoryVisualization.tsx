@@ -174,7 +174,7 @@ export function FactoryVisualization({
           const next = STAGE_ORDER[index + 1];
           const width = Math.min(15, previous ? x - safeLayout.machines[previous] - 1 : x * 2 - 1, next ? safeLayout.machines[next] - x - 1 : (100 - x) * 2 - 1);
           return (
-            <MachineCondition key={kind} kind={kind} machine={machine} capacity={capacity} running={running && Boolean(processing(kind))} progress={processing(kind)?.processing} waiting={Boolean(issue)} constrained={kind === bottleneck.kind && capacity > 0 && !issue} x={x} width={width}/>
+            <MachineCondition key={kind} kind={kind} machine={machine} capacity={capacity} running={running && Boolean(processing(kind))} progress={processing(kind)?.processing ?? 0} waiting={Boolean(issue)} constrained={kind === bottleneck.kind && capacity > 0 && !issue} x={x} width={width}/>
           );
         })}
 
