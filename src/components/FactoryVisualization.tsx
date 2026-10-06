@@ -13,7 +13,7 @@ import { DEFAULT_APPEARANCE, type FactoryAppearance } from "@/lib/factory-appear
 const labels: Record<MachineKind, string> = { mixing: "MIXER", baking: "OVEN", icing: "ICING", packaging: "PACKAGER" };
 const operations: Record<MachineKind, string> = { mixing: "MIXING", baking: "BAKING", icing: "ICING", packaging: "SEALING" };
 
-function MachineCondition({ kind, machine, capacity, running, waiting, constrained, x, width }: {
+function MachineCondition({ kind, machine, capacity, running, waiting, constrained, x, width, progress = 0 }: {
   kind: MachineKind; machine: SimulationState["machines"][MachineKind]; capacity: number;
    running: boolean; waiting: boolean; constrained: boolean; x: number; width: number; progress?: number;
 }) {
@@ -42,7 +42,8 @@ function MachineCondition({ kind, machine, capacity, running, waiting, constrain
       <div className="stage-pin-top"><i /><span>{labels[kind]}</span></div>
       <div className="machine-health" role="progressbar" aria-label={`${MACHINE_CONFIG[kind].label} health`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={health}><span /></div>
       <div className="machine-health-value"><span>HP</span><strong>{health}%</strong></div>
-      <div className="stage-pin-bottom">{repairing ? <><Wrench size={9}/>{machine.repairDays}d</> : broken ? "FAILED" : recovered ? <><Check size={9}/>OK</> : `${capacity}/day`}</div>
+      <div className="stage-pin-bottom">{repairing ? <><Wrench size={9}/>{machine.repairDays}d</> : broken ? "FAILED" : recovered ? <><Check size={9}/>OK</> : running ? operations[kind] : `${capacity}/day`}</div>
+      {running && <div className="machine-operation-progress"><span style={{ width: `${progress * 100}%` }}/></div>}
       {repairing && <div className="machine-repair-progress" role="progressbar" aria-label={`${MACHINE_CONFIG[kind].label} repair`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={repairProgress} aria-valuetext={`${machine.repairDays} days remaining`}><span /></div>}
     </div>
     {(broken || recovered) && <div className={`machine-condition-effect ${broken ? "condition-failed" : "condition-restored"} ${repairing ? "condition-repairing" : ""}`} style={{ left: `${x}%` }} aria-hidden="true">
@@ -125,7 +126,12 @@ export function FactoryVisualization({
   const products = Array.from({ length: motion.count }, (_, index) => {
     const sample = motion.sample(reduced ? 1 : phase, index);
     const image = sample.completed < 2 ? batterImage : sample.completed < 3 ? bakedImage : sample.completed < 4 ? icedImage : boxImage;
-    return { ...sample, image, opacity: sample.visible ? sample.fade : 0, key: index };
+    const p = sample.processing;
+    // A lift carries each product from the front conveyor to the actual chamber,
+    // holds it there during processing, then lowers the finished product back.
+    const lift = sample.stage ? Math.min(1, p / .18, (1 - p) / .18) : 0;
+    const chamberBottom = sample.stage === "mixing" ? 40 : sample.stage === "baking" ? 44 : sample.stage === "icing" ? 31 : 39;
+    return { ...sample, image, lift, bottom: safeLayout.beltY + lift * Math.max(0, chamberBottom - safeLayout.beltY), opacity: sample.visible ? sample.fade : 0, key: index };
   });
   const processing = (kind: MachineKind) => products.find(product => product.visible && product.stage === kind);
 
@@ -168,7 +174,7 @@ export function FactoryVisualization({
           const next = STAGE_ORDER[index + 1];
           const width = Math.min(15, previous ? x - safeLayout.machines[previous] - 1 : x * 2 - 1, next ? safeLayout.machines[next] - x - 1 : (100 - x) * 2 - 1);
           return (
-            <MachineCondition key={kind} kind={kind} machine={machine} capacity={capacity} running={running && Boolean(processing(kind))} waiting={Boolean(issue)} constrained={kind === bottleneck.kind && capacity > 0 && !issue} x={x} width={width}/>
+            <MachineCondition key={kind} kind={kind} machine={machine} capacity={capacity} running={running && Boolean(processing(kind))} progress={processing(kind)?.processing} waiting={Boolean(issue)} constrained={kind === bottleneck.kind && capacity > 0 && !issue} x={x} width={width}/>
           );
         })}
 
@@ -176,25 +182,27 @@ export function FactoryVisualization({
           {STAGE_ORDER.map(kind => {
             const product = processing(kind);
             if (!product || !running) return null;
-            return <div key={kind} className={`machine-processing processing-${kind}`} data-machine={kind} style={{ left: `${safeLayout.machines[kind]}%`, "--process": product.processing, "--turn": `${product.processing * 1080}deg` } as CSSProperties}>
-              {kind === "mixing" && <><i className="mixer-spindle"/><i className="mixer-paddle"/><i className="mixer-paddle paddle-second"/></>}
-              {kind === "baking" && <><i className="oven-heat"/><i className="oven-fan"/></>}
-              {kind === "icing" && <><i className="icing-nozzle"/><i className="icing-stream"/></>}
-              {kind === "packaging" && <><i className="packing-jaw jaw-left"/><i className="packing-jaw jaw-right"/></>}
+            const working = product.processing > .18 && product.processing < .82;
+            const stroke = Math.sin(Math.PI * product.processing);
+            return <div key={kind} className={`machine-processing processing-${kind} ${working ? "chamber-working" : "chamber-transfer"}`} data-machine={kind} style={{ left: `${safeLayout.machines[kind]}%`, "--process": product.processing, "--stroke": stroke, "--turn": `${product.processing * 2160}deg` } as CSSProperties}>
+              <i className="machine-lift" style={{ bottom: `${product.bottom - 1}%` }}/>
+              {kind === "mixing" && <><i className="mixer-spindle"/><i className="mixer-batter"/><i className="mixer-paddle"/><i className="mixer-paddle paddle-second"/></>}
+              {kind === "baking" && <><i className="oven-heat"/><i className="oven-fan"/><i className="oven-rack"/><i className="oven-steam"/></>}
+              {kind === "icing" && <><i className="icing-nozzle"/>{working && <i className="icing-stream"/>}</>}
+              {kind === "packaging" && <><i className="packing-jaw jaw-left"/><i className="packing-jaw jaw-right"/><i className="packing-seal"/></>}
             </div>;
           })}
         </div>
 
         <div className="belt-products" aria-hidden="true">
           {products.map(product => (
-            <img
+            <div className={`factory-product ${product.stage ? `product-processing product-${product.stage}` : ""}`}
               key={product.key}
-              src={product.image}
-              alt=""
               data-product={product.key} data-stage={product.stage || "travel"} data-completed={product.completed}
-              className={product.stage ? `product-processing product-${product.stage}` : ""}
-              style={{ left: `${product.x}%`, opacity: product.opacity }}
-            />
+              style={{ left: `${product.x}%`, bottom: `${product.bottom}%`, opacity: product.opacity, "--conversion": Math.max(0, Math.min(1, (product.processing - .45) / .3)), "--rise": 1 + product.processing * .12 } as CSSProperties}>
+              <img src={product.image} alt=""/>
+              {product.stage && product.stage !== "mixing" && <img className="product-result" src={product.stage === "baking" ? bakedImage : product.stage === "icing" ? icedImage : boxImage} alt=""/>}
+            </div>
           ))}
         </div>
 
