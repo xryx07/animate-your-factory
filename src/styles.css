@@ -53,6 +53,8 @@
   --factory-glass: oklch(1 0 0 / .94);
   --factory-light-warm: oklch(.84 .1 75 / .14);
   --factory-light-cool: oklch(.8 .09 220 / .14);
+  --factory-steel: oklch(.74 .018 230);
+  --factory-batter: oklch(.87 .12 88);
 }
 @layer base { * { box-sizing:border-box; border-color:var(--border); } body { margin:0; background:var(--background); color:var(--foreground); font-family:var(--font-sans); } button {font:inherit;} }
 .visual-page { min-height:100vh; padding:clamp(12px,3vw,40px); }
@@ -102,6 +104,7 @@
 .machine-repair-progress span {display:block;height:100%;width:var(--repair-progress);background:var(--factory-amber);transition:width .35s ease;}
 .stage-repairing .stage-pin-bottom svg {animation:repair-turn 1.4s ease-in-out infinite;}
 .stage-restored {border-color:var(--factory-green);}
+.machine-operation-progress {height:2px;margin-top:3px;background:var(--muted);overflow:hidden;}.machine-operation-progress span {display:block;height:100%;background:var(--factory-green);}
 .machine-condition-effect {position:absolute;top:46%;transform:translateX(-50%);width:10%;height:17%;z-index:2;pointer-events:none;}
 .machine-condition-icon {position:absolute;left:50%;top:24%;transform:translateX(-50%);display:grid;place-items:center;width:30px;height:30px;background:var(--factory-glass);color:var(--destructive);border:1px solid currentColor;border-radius:4px;}
 .condition-failed .machine-condition-icon {animation:fault-beacon 1.8s ease-in-out infinite;}
@@ -120,14 +123,21 @@
 .machine-processing {position:absolute;top:0;bottom:0;width:16%;transform:translateX(-50%);}
 .machine-processing i {position:absolute;display:block;}
 .mixer-spindle {left:49%;top:44%;height:16%;width:3px;background:var(--factory-ink);}
-.mixer-paddle {left:24%;top:57%;width:52%;height:5px;border:1px solid var(--factory-glass);border-radius:50%;background:var(--factory-ink);transform:rotateY(var(--turn));}
+.mixer-paddle {left:24%;top:57%;width:52%;height:5px;border:1px solid var(--factory-glass);border-radius:50%;background:var(--factory-steel);transform:rotateY(var(--turn));}
 .mixer-paddle.paddle-second {top:59%;transform:rotateY(calc(var(--turn) + 90deg));}
 .oven-heat {inset:42% 6% 36%;background:color-mix(in oklab,var(--factory-amber) 28%,transparent);box-shadow:inset 0 0 20px var(--factory-amber);opacity:calc(.4 + var(--process) * .6);}
 .oven-fan {top:51%;left:42%;width:16%;aspect-ratio:1;border:2px dashed var(--factory-ink);border-radius:50%;transform:rotate(var(--turn));}
-.icing-nozzle {left:48%;bottom:calc(var(--belt-y) + 4%);width:6%;height:14%;background:var(--factory-ink);border:1px solid var(--factory-glass);transform:translateY(calc(var(--process) * 4px));}
-.icing-stream {left:50%;bottom:calc(var(--belt-y) + 1%);width:4%;height:8%;background:var(--primary);border-radius:40%;transform-origin:top;transform:scaleY(calc(.25 + var(--process) * .75));}
+.icing-nozzle {left:48%;bottom:38%;width:6%;height:10%;background:var(--factory-steel);border:1px solid var(--factory-ink);transform:translateY(calc(var(--stroke) * 4px));}
+.icing-stream {left:50%;bottom:33%;width:4%;height:7%;background:var(--primary);border-radius:40%;transform-origin:top;transform:scaleY(calc(.25 + var(--stroke) * .75));}
 .packing-jaw {bottom:calc(var(--belt-y) + 1%);width:17%;height:13%;background:var(--factory-green);border:2px solid var(--factory-ink);border-radius:2px;}
-.jaw-left {left:20%;transform:translateX(calc(var(--process) * 10px));}.jaw-right {right:20%;transform:translateX(calc(var(--process) * -10px));}
+.jaw-left {left:20%;transform:translateX(calc(var(--stroke) * 10px));}.jaw-right {right:20%;transform:translateX(calc(var(--stroke) * -10px));}
+.machine-lift {left:35%;width:30%;height:1%;background:var(--factory-steel);border-bottom:2px solid var(--factory-ink);}
+.mixer-batter {left:24%;top:57%;width:52%;height:5%;background:var(--factory-batter);border-radius:50%;border:1px solid var(--factory-steel);transform:scaleX(calc(.85 + var(--stroke) * .15));}
+.oven-rack {left:22%;bottom:43%;width:56%;height:1%;background:var(--factory-steel);}
+.oven-steam {left:45%;top:37%;width:10%;height:8%;border-left:2px solid var(--factory-glass);border-right:1px solid var(--factory-glass);opacity:calc(var(--stroke) * .6);transform:translateY(calc(var(--process) * -10px));}
+.packing-jaw {bottom:40%;height:8%;width:5%;border-width:1px;background:var(--factory-steel);}
+.packing-seal {left:37%;bottom:49%;width:26%;height:2%;background:var(--factory-ink);transform:translateY(calc(var(--stroke) * 8px));}
+.chamber-transfer .mixer-paddle,.chamber-transfer .oven-fan {visibility:hidden;}
 .is-running .product-mixing {animation:product-mix .35s ease-in-out infinite;}
 .is-running .product-baking {filter:drop-shadow(0 0 5px var(--factory-amber));}
 @keyframes product-mix {0%,100% {transform:translateX(-50%) scale(var(--product-scale)) rotate(-5deg);}50% {transform:translateX(-50%) scale(var(--product-scale)) rotate(5deg);}}
@@ -135,7 +145,10 @@
 .icing-action {position:absolute;width:4px;height:12%;border-radius:50%;background:color-mix(in oklab,var(--primary) 76%,transparent);transform-origin:top;animation:icing-pulse 1.4s ease-in-out infinite;}
 .packer-action {position:absolute;top:40%;width:8%;height:3px;transform:translateX(-50%);background:color-mix(in oklab,var(--factory-ink) 45%,transparent);animation:packer-pulse 1.6s ease-in-out infinite;}
 .belt-products {position:absolute;inset:0;z-index:2;pointer-events:none;}
-.belt-products img {position:absolute;width:clamp(16px,3.4cqw,51px);height:auto;bottom:var(--belt-y);transform:translateX(-50%) scale(var(--product-scale));transform-origin:center bottom;filter:drop-shadow(0 2px 3px color-mix(in oklab,var(--factory-ink) 28%,transparent));will-change:left;}
+.factory-product {position:absolute;width:clamp(16px,3.4cqw,51px);aspect-ratio:1;transform:translateX(-50%) scale(var(--product-scale));transform-origin:center bottom;filter:drop-shadow(0 2px 3px color-mix(in oklab,var(--factory-ink) 28%,transparent));will-change:left,bottom;}
+.factory-product img {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
+.factory-product .product-result {opacity:var(--conversion);}
+.product-baking img {transform:scaleY(var(--rise));transform-origin:bottom;}
 .factory-scene {container-type:inline-size;}
 .scene-left-label,.scene-right-label {position:absolute;z-index:3;bottom:5%;background:var(--factory-glass);border-radius:3px;padding:7px 10px;box-shadow:0 2px 8px color-mix(in oklab,var(--factory-ink) 16%,transparent);font:700 9px var(--font-mono);}
 .scene-left-label {left:2%;display:grid;gap:2px;}
@@ -175,7 +188,7 @@
   .factory-scene {min-height:260px;aspect-ratio:1.55;}.factory-background {object-fit:fill;}
   .stage-pin {top:6%;padding:4px 3px;}.stage-pin-top {font-size:8px;gap:3px;}.stage-pin-top i {width:4px;height:4px;}.stage-pin-bottom {font-size:8px;}.stage-pin:after {height:12px;}.machine-health-value {font-size:7px;}.machine-condition-icon {width:24px;height:24px;}.machine-condition-icon svg {width:14px;height:14px;}
   .scene-left-label,.scene-right-label {bottom:4%;padding:5px;font-size:7px;}.scene-left-label strong,.scene-right-label strong {font-size:12px;}.scene-right-label svg {display:none;}
-   .belt-products img {width:clamp(16px,3.4cqw,27px);}
+   .factory-product {width:clamp(16px,3.4cqw,27px);}
   .factory-rail {grid-template-columns:repeat(3,minmax(0,1fr));}.rail-cell {padding:10px 9px;border-bottom:1px solid var(--border);}.rail-cell:nth-child(3) {border-right:0;}.rail-cell:nth-child(n+4) {border-bottom:0;}.rail-cell strong {font-size:16px;}.rail-cell .constraint-value {font-size:13px;}.rail-cell > span {font-size:8px;}
   .factory-footer {font-size:9px;}.factory-footer span:last-child {margin-left:auto;}
    .editor-fields {grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}

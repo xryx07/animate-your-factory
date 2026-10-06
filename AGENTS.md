@@ -15,3 +15,4 @@
 - Keep the image-analysis editor separate from the state-fed factory illustration; this lets the host game embed the scene without editor or preview controls.
 - Derive displayed machine health from the active fleet's working-unit ratio and repair progress from remaining repair days; this avoids inventing wear or changing the host game's failure rules.
 - Keep appearance controls separate from the visualization and pass appearance as data; store preview preferences locally and apply lighting/style filters without changing machine or product motion.
+- Use the processing clock for chamber lifts, mechanism strokes and product crossfades; this makes machine movement and material conversion pause together with host state.
