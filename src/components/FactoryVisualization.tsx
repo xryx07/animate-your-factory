@@ -10,11 +10,12 @@ import { DEFAULT_LAYOUT, sanitizeLayout, STAGE_ORDER, type FactoryLayout } from 
 import { createFactoryMotion } from "@/lib/factory-motion";
 import { DEFAULT_APPEARANCE, type FactoryAppearance } from "@/lib/factory-appearance";
 
-const labels: Record<MachineKind, string> = { mixing: "MIXER", baking: "OVEN", icing: "ICING", packaging: "PACKER" };
+const labels: Record<MachineKind, string> = { mixing: "MIXER", baking: "OVEN", icing: "ICING", packaging: "PACKAGER" };
+const operations: Record<MachineKind, string> = { mixing: "MIXING", baking: "BAKING", icing: "ICING", packaging: "SEALING" };
 
 function MachineCondition({ kind, machine, capacity, running, waiting, constrained, x, width }: {
   kind: MachineKind; machine: SimulationState["machines"][MachineKind]; capacity: number;
-   running: boolean; waiting: boolean; constrained: boolean; x: number; width: number;
+   running: boolean; waiting: boolean; constrained: boolean; x: number; width: number; progress?: number;
 }) {
   const broken = machine.broken > 0;
   const repairing = broken && machine.repairDays > 0;

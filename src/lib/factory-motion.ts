@@ -3,7 +3,7 @@ import type { MachineKind } from "./muffin-simulation";
 
 /** One shared clock, constant transfer velocity and reserved dwell space. */
 export function createFactoryMotion(layout: FactoryLayout, safeGap: number) {
-  const dwell = 6;
+  const dwell = 12;
   const start = layout.intakeX;
   const length = layout.dispatchX - start;
   const duration = length + STAGE_ORDER.length * dwell;
