@@ -8,4 +8,4 @@
 - [x] Add reference-image analysis and editable collision-safe factory configuration.
 - [x] Keep the factory illustration reusable without simulator controls and verify upload/edit flow.
 - [x] Add state-linked machine health bars, breakdown and repair effects; verify failure/recovery and narrow layouts.
-- [ ] Make products enter the mixer and process sequentially at all four machines with synchronized effects and collision-safe spacing.
+- [x] Make products enter the mixer and process sequentially at all four machines with synchronized effects and collision-safe spacing.
