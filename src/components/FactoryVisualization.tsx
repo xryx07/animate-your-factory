@@ -8,6 +8,7 @@ import boxImage from "@/assets/muffin-box.png";
 import { MACHINE_CONFIG, operatingCapacity, type MachineKind, type SimulationState } from "@/lib/muffin-simulation";
 import { DEFAULT_LAYOUT, sanitizeLayout, STAGE_ORDER, type FactoryLayout } from "@/lib/factory-layout";
 import { createFactoryMotion } from "@/lib/factory-motion";
+import { DEFAULT_APPEARANCE, type FactoryAppearance } from "@/lib/factory-appearance";
 
 const labels: Record<MachineKind, string> = { mixing: "MIXER", baking: "OVEN", icing: "ICING", packaging: "PACKER" };
 
@@ -56,6 +57,7 @@ export type FactoryVisualizationProps = {
   speed?: number;
   layout?: FactoryLayout;
   background?: string | null;
+  appearance?: FactoryAppearance;
 };
 
 function prefersReducedMotion() {
@@ -70,6 +72,7 @@ export function FactoryVisualization({
   speed = 1,
   layout = DEFAULT_LAYOUT,
   background,
+  appearance = DEFAULT_APPEARANCE,
 }: FactoryVisualizationProps) {
   const safeLayout = sanitizeLayout(layout);
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -129,6 +132,7 @@ export function FactoryVisualization({
     "--belt-y": `${safeLayout.beltY}%`,
     "--label-y": `${safeLayout.labelY}%`,
     "--product-scale": safeLayout.productScale,
+    "--scene-brightness": Math.max(70, Math.min(130, appearance.brightness)) / 100,
   } as CSSProperties;
 
   return (
@@ -145,13 +149,14 @@ export function FactoryVisualization({
         </div>
       </div>
 
-      <div ref={sceneRef} className={`factory-scene ${running ? "is-running" : ""}`} style={sceneStyle}>
+      <div ref={sceneRef} className={`factory-scene lighting-${appearance.lighting} visual-style-${appearance.style} ${running ? "is-running" : ""}`} style={sceneStyle}>
         <img
           className="factory-background"
-          src={background || floorImage}
+          src={background || appearance.background || floorImage}
           alt="Muffin mixing, baking, icing and packaging machines on a continuous bakery conveyor"
         />
         <div className="factory-scene-vignette" />
+        <div className="factory-lighting" aria-hidden="true" />
 
         {STAGE_ORDER.map(kind => {
           const machine = state.machines[kind];

@@ -9,3 +9,4 @@
 - [x] Keep the factory illustration reusable without simulator controls and verify upload/edit flow.
 - [x] Add state-linked machine health bars, breakdown and repair effects; verify failure/recovery and narrow layouts.
 - [x] Make products enter the mixer and process sequentially at all four machines with synchronized effects and collision-safe spacing.
+- [x] Add compact background, lighting and style options without restoring the machine-layout editor; verify saved settings and animation.
