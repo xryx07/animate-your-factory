@@ -4,7 +4,7 @@ export type FactoryAppearance = {
   style: "original" | "industrial" | "soft";
   brightness: number;
 };
-export const DEFAULT_APPEARANCE: FactoryAppearance = { background: null, lighting: "neutral", style: "original", brightness: 100 };
+export const DEFAULT_APPEARANCE: FactoryAppearance = { background: null, lighting: "warm", style: "original", brightness: 110 };
 const KEY = "muffin-factory-appearance-v1";
 export function normalizeAppearance(value: Partial<FactoryAppearance>): FactoryAppearance {
   return {

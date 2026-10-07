@@ -11,3 +11,4 @@
 - [x] Make products enter the mixer and process sequentially at all four machines with synchronized effects and collision-safe spacing.
 - [x] Add compact background, lighting and style options without restoring the machine-layout editor; verify saved settings and animation.
 - [x] Refine realistic in-machine transfers, visible processing and finished-product transitions; verify every stage and failure pause.
+- [x] Set the reference appearance as the shared default and remove the Appearance section and saved preview overrides.
