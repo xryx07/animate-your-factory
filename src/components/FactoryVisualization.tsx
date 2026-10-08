@@ -9,13 +9,14 @@ import { MACHINE_CONFIG, operatingCapacity, type MachineKind, type SimulationSta
 import { DEFAULT_LAYOUT, sanitizeLayout, STAGE_ORDER, type FactoryLayout } from "@/lib/factory-layout";
 import { createFactoryMotion } from "@/lib/factory-motion";
 import { DEFAULT_APPEARANCE, type FactoryAppearance } from "@/lib/factory-appearance";
+import { repairTimingAt, type FactoryClock, type RepairTiming } from "@/lib/factory-clock";
 
 const labels: Record<MachineKind, string> = { mixing: "MIXER", baking: "OVEN", icing: "ICING", packaging: "PACKAGER" };
 const operations: Record<MachineKind, string> = { mixing: "MIXING", baking: "BAKING", icing: "ICING", packaging: "SEALING" };
 
-function MachineCondition({ kind, machine, capacity, running, waiting, constrained, x, width, progress = 0 }: {
+function MachineCondition({ kind, machine, capacity, running, waiting, constrained, x, width, progress = 0, timing, seconds = 0 }: {
   kind: MachineKind; machine: SimulationState["machines"][MachineKind]; capacity: number;
-   running: boolean; waiting: boolean; constrained: boolean; x: number; width: number; progress?: number;
+   running: boolean; waiting: boolean; constrained: boolean; x: number; width: number; progress?: number; timing?: RepairTiming | undefined; seconds?: number | undefined;
 }) {
   const broken = machine.broken > 0;
   const repairing = broken && machine.repairDays > 0;
@@ -32,7 +33,9 @@ function MachineCondition({ kind, machine, capacity, running, waiting, constrain
     return () => { if (timer) clearTimeout(timer); };
   }, [broken]);
   const duration = kind === "mixing" || kind === "baking" ? 2 : 1;
-  const repairProgress = Math.round(Math.max(0, Math.min(1, 1 - machine.repairDays / duration)) * 100);
+  const liveRepair = timing ? repairTimingAt(timing, seconds) : null;
+  const repairProgress = Math.round(liveRepair?.progress ?? Math.max(0, Math.min(1, 1 - machine.repairDays / duration)) * 100);
+  const remainingLabel = liveRepair ? `${Math.ceil(liveRepair.remaining)}s` : `${machine.repairDays}d`;
   const status = repairing ? "REPAIRING" : broken ? "FAILED" : machine.active === 0 ? "OFF" : recovered ? "RESTORED" : waiting ? "WAITING" : running ? "RUNNING" : "READY";
   const description = `${MACHINE_CONFIG[kind].label}: ${status.toLowerCase()}, health ${health}% (${Math.max(0, machine.active - machine.broken)} of ${machine.active} active units working)${repairing ? `, ${machine.repairDays} days remaining` : ""}`;
   return <>
@@ -42,9 +45,9 @@ function MachineCondition({ kind, machine, capacity, running, waiting, constrain
       <div className="stage-pin-top"><i /><span>{labels[kind]}</span></div>
       <div className="machine-health" role="progressbar" aria-label={`${MACHINE_CONFIG[kind].label} health`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={health}><span /></div>
       <div className="machine-health-value"><span>HP</span><strong>{health}%</strong></div>
-      <div className="stage-pin-bottom">{repairing ? <><Wrench size={9}/>{machine.repairDays}d</> : broken ? "FAILED" : recovered ? <><Check size={9}/>OK</> : running ? operations[kind] : `${capacity}/day`}</div>
+      <div className="stage-pin-bottom">{repairing ? <><Wrench size={9}/>{remainingLabel}</> : broken ? "FAILED" : recovered ? <><Check size={9}/>OK</> : running ? operations[kind] : `${capacity}/day`}</div>
       {running && <div className="machine-operation-progress"><span style={{ width: `${progress * 100}%` }}/></div>}
-      {repairing && <div className="machine-repair-progress" role="progressbar" aria-label={`${MACHINE_CONFIG[kind].label} repair`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={repairProgress} aria-valuetext={`${machine.repairDays} days remaining`}><span /></div>}
+      {repairing && <div className="machine-repair-progress" role="progressbar" aria-label={`${MACHINE_CONFIG[kind].label} repair`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={repairProgress} aria-valuetext={`${remainingLabel} remaining`}><span /></div>}
     </div>
     {(broken || recovered) && <div className={`machine-condition-effect ${broken ? "condition-failed" : "condition-restored"} ${repairing ? "condition-repairing" : ""}`} style={{ left: `${x}%` }} aria-hidden="true">
       {broken && <div className="machine-smoke"><i/><i/><i/></div>}
@@ -60,6 +63,8 @@ export type FactoryVisualizationProps = {
   layout?: FactoryLayout;
   background?: string | null;
   appearance?: FactoryAppearance;
+  clock?: FactoryClock;
+  title?: string;
 };
 
 function prefersReducedMotion() {
@@ -75,6 +80,8 @@ export function FactoryVisualization({
   layout = DEFAULT_LAYOUT,
   background,
   appearance = DEFAULT_APPEARANCE,
+  clock,
+  title = "FACTORY FLOOR",
 }: FactoryVisualizationProps) {
   const safeLayout = sanitizeLayout(layout);
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -89,7 +96,7 @@ export function FactoryVisualization({
   const capacities = STAGE_ORDER.map(kind => ({ kind, capacity: operatingCapacity(state, kind) }));
   const bottleneck = capacities.reduce((min, item) => (item.capacity < min.capacity ? item : min));
   const theoretical = Math.max(0, Math.min(state.mix, state.packagingMaterial, bottleneck.capacity));
-  const running = playing && theoretical > 0 && state.day < state.maxDays && state.cash > 0;
+  const running = playing && (clock?.running ?? true) && theoretical > 0 && state.day < state.maxDays && state.cash > 0;
   const awaiting = state.transits.filter(order => order.arrivalDay > state.day);
   const nextDelivery = awaiting.length ? Math.min(...awaiting.map(order => order.arrivalDay - state.day)) : null;
   const issue = state.mix <= 0
@@ -111,7 +118,7 @@ export function FactoryVisualization({
   const reduced = prefersReducedMotion();
 
   useEffect(() => {
-    if (!running || reduced) return;
+    if (!running || reduced || clock) return;
     let previous = performance.now();
     const tick = (now: number) => {
       const delta = Math.min(.05, (now - previous) / 1000);
@@ -121,10 +128,10 @@ export function FactoryVisualization({
     };
     frame.current = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame.current);
-  }, [running, reduced, cycle]);
+  }, [running, reduced, cycle, clock]);
 
   const products = Array.from({ length: motion.count }, (_, index) => {
-    const sample = motion.sample(reduced ? 1 : phase, index);
+    const sample = motion.sample(reduced ? 1 : clock ? clock.productionSeconds / 18.75 * safeLayout.speedScale : phase, index);
     const image = sample.completed < 2 ? batterImage : sample.completed < 3 ? bakedImage : sample.completed < 4 ? icedImage : boxImage;
     const p = sample.processing;
     // A lift carries each product from the front conveyor to the actual chamber,
@@ -147,7 +154,7 @@ export function FactoryVisualization({
       <div className="factory-header">
         <div className="factory-title">
           <Factory size={18} strokeWidth={1.8} />
-          <span>FACTORY FLOOR</span>
+          <span>{title}</span>
           <small>LIVE PRODUCTION</small>
         </div>
         <div className={`factory-live ${running ? "active" : ""}`}>
@@ -174,7 +181,7 @@ export function FactoryVisualization({
           const next = STAGE_ORDER[index + 1];
           const width = Math.min(15, previous ? x - safeLayout.machines[previous] - 1 : x * 2 - 1, next ? safeLayout.machines[next] - x - 1 : (100 - x) * 2 - 1);
           return (
-            <MachineCondition key={kind} kind={kind} machine={machine} capacity={capacity} running={running && Boolean(processing(kind))} progress={processing(kind)?.processing ?? 0} waiting={Boolean(issue)} constrained={kind === bottleneck.kind && capacity > 0 && !issue} x={x} width={width}/>
+            <MachineCondition key={kind} kind={kind} machine={machine} capacity={capacity} running={running && Boolean(processing(kind))} progress={processing(kind)?.processing ?? 0} waiting={Boolean(issue)} constrained={kind === bottleneck.kind && capacity > 0 && !issue} x={x} width={width} timing={clock?.repairs?.[kind]} seconds={clock?.elapsedSeconds}/>
           );
         })}
 
