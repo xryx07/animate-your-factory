@@ -9,8 +9,9 @@ export function loadLibrary(): FactoryLibrary {
     const data = JSON.parse(localStorage.getItem(KEY) || "null") as FactoryLibrary | null;
     if (!data?.factories?.length) return initialLibrary();
     const factories = data.factories.filter(f => typeof f.id === "string" && typeof f.name === "string").map(f => ({ ...f, layout: sanitizeLayout(f.layout), background: typeof f.background === "string" && /^data:image\/(png|jpeg|webp);base64,/.test(f.background) ? f.background : null }));
-    if (!factories.length) return initialLibrary();
-    return { factories, defaultId: factories.some(f => f.id === data.defaultId) ? data.defaultId : factories[0].id };
+    const first = factories[0];
+    if (!first) return initialLibrary();
+    return { factories, defaultId: factories.some(f => f.id === data.defaultId) ? data.defaultId : first.id };
   } catch { return initialLibrary(); }
 }
 export function saveLibrary(library: FactoryLibrary) {

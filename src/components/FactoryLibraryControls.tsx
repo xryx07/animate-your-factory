@@ -42,8 +42,9 @@ export function FactoryLibraryControls({ library, onChange, selected, onSelect }
   }
   function remove(id: string) {
     const factories = library.factories.filter(f => f.id !== id);
-    if (!factories.length) return;
-    const defaultId = library.defaultId === id ? factories[0].id : library.defaultId;
+    const first = factories[0];
+    if (!first) return;
+    const defaultId = library.defaultId === id ? first.id : library.defaultId;
     onChange({ factories, defaultId }); onSelect(selected.filter(s => s !== id).length ? selected.filter(s => s !== id) : [defaultId]);
   }
   return <section className="factory-library" aria-label="Factory configurations">

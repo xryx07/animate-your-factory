@@ -16,7 +16,7 @@ const operations: Record<MachineKind, string> = { mixing: "MIXING", baking: "BAK
 
 function MachineCondition({ kind, machine, capacity, running, waiting, constrained, x, width, progress = 0, timing, seconds = 0 }: {
   kind: MachineKind; machine: SimulationState["machines"][MachineKind]; capacity: number;
-   running: boolean; waiting: boolean; constrained: boolean; x: number; width: number; progress?: number; timing?: RepairTiming; seconds?: number;
+   running: boolean; waiting: boolean; constrained: boolean; x: number; width: number; progress?: number; timing?: RepairTiming | undefined; seconds?: number | undefined;
 }) {
   const broken = machine.broken > 0;
   const repairing = broken && machine.repairDays > 0;
