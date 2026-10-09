@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vitest";
 import { repairTimingAt } from "./factory-clock";
 import { initialLibrary, loadLibrary, saveLibrary } from "./factory-library";
 import { adaptHostGame, type HostTeam } from "./host-game-adapter";

@@ -12,7 +12,7 @@
 - [x] Add compact background, lighting and style options without restoring the machine-layout editor; verify saved settings and animation.
 - [x] Refine realistic in-machine transfers, visible processing and finished-product transitions; verify every stage and failure pause.
 - [x] Set the reference appearance as the shared default and remove the Appearance section and saved preview overrides.
-- [ ] Restore reference upload and AI position detection with automatic collision-safe flow and spacing.
-- [ ] Synchronize breakdown and repair timing with the host game's clock.
-- [ ] Save multiple layouts, compare two or three factory visuals and select a default.
-- [ ] Link the visualization to the existing game's live machine and production state (requires host integration details).
+- [x] Restore reference upload and AI position detection with automatic collision-safe flow and spacing.
+- [x] Add host-clock breakdown and repair countdown support; interpolate between host ticks without recovering machines locally.
+- [x] Save multiple layouts, compare two or three factory visuals and select a default.
+- [ ] Install and verify LiveFactoryVisualization in the separate GitHub/Vercel game (blocked: this checkout cannot edit/deploy that repository; integration wrapper and instructions are ready).
