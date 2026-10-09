@@ -1,3 +1,4 @@
+/// <reference types="bun" />
 import { describe, expect, test } from "bun:test";
 import { repairTimingAt } from "./factory-clock";
 import { initialLibrary, loadLibrary, saveLibrary } from "./factory-library";
