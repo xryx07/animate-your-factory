@@ -15,4 +15,5 @@
 - [x] Restore reference upload and AI position detection with automatic collision-safe flow and spacing.
 - [x] Add host-clock breakdown and repair countdown support; interpolate between host ticks without recovering machines locally.
 - [x] Save multiple layouts, compare two or three factory visuals and select a default.
+- [x] Remove the Factory configurations panel from the page so the factory visual renders alone.
 - [ ] Install and verify LiveFactoryVisualization in the separate GitHub/Vercel game (blocked: this checkout cannot edit/deploy that repository; integration wrapper and instructions are ready).
