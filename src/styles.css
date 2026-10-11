@@ -152,7 +152,7 @@
 .icing-action {position:absolute;width:4px;height:12%;border-radius:50%;background:color-mix(in oklab,var(--primary) 76%,transparent);transform-origin:top;animation:icing-pulse 1.4s ease-in-out infinite;}
 .packer-action {position:absolute;top:40%;width:8%;height:3px;transform:translateX(-50%);background:color-mix(in oklab,var(--factory-ink) 45%,transparent);animation:packer-pulse 1.6s ease-in-out infinite;}
 .belt-products {position:absolute;inset:0;z-index:2;pointer-events:none;}
-.factory-product {position:absolute;width:clamp(16px,3.4cqw,51px);aspect-ratio:1;transform:translateX(-50%) scale(var(--product-scale));transform-origin:center bottom;filter:drop-shadow(0 2px 3px color-mix(in oklab,var(--factory-ink) 28%,transparent));will-change:left,bottom;}
+.factory-product {position:absolute;width:clamp(18px,4.4cqw,66px);aspect-ratio:1;transform:translateX(-50%) scale(var(--product-scale));transform-origin:center bottom;filter:drop-shadow(0 2px 3px color-mix(in oklab,var(--factory-ink) 28%,transparent));will-change:left,bottom;}
 .factory-product img {position:absolute;inset:0;width:100%;height:100%;object-fit:contain;}
 .factory-product .product-result {opacity:var(--conversion);}
 .product-baking img {transform:scaleY(var(--rise));transform-origin:bottom;}
@@ -196,7 +196,7 @@
   .factory-scene {min-height:260px;aspect-ratio:1.55;}.factory-background {object-fit:fill;}
   .stage-pin {top:6%;padding:4px 3px;}.stage-pin-top {font-size:8px;gap:3px;}.stage-pin-top i {width:4px;height:4px;}.stage-pin-bottom {font-size:8px;}.stage-pin:after {height:12px;}.machine-health-value {font-size:7px;}.machine-condition-icon {width:24px;height:24px;}.machine-condition-icon svg {width:14px;height:14px;}
   .scene-left-label,.scene-right-label {bottom:4%;padding:5px;font-size:7px;}.scene-left-label strong,.scene-right-label strong {font-size:12px;}.scene-right-label svg {display:none;}
-   .factory-product {width:clamp(16px,3.4cqw,27px);}
+   .factory-product {width:clamp(18px,4.4cqw,36px);}
   .factory-rail {grid-template-columns:repeat(3,minmax(0,1fr));}.rail-cell {padding:10px 9px;border-bottom:1px solid var(--border);}.rail-cell:nth-child(3) {border-right:0;}.rail-cell:nth-child(n+4) {border-bottom:0;}.rail-cell strong {font-size:16px;}.rail-cell .constraint-value {font-size:13px;}.rail-cell > span {font-size:8px;}
   .factory-footer {font-size:9px;}.factory-footer span:last-child {margin-left:auto;}
    .editor-fields {grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;}

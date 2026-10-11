@@ -108,7 +108,7 @@ export function FactoryVisualization({
         : null;
 
   // Reserve a full processing stop plus safe travel spacing between arrivals.
-  const spriteWidth = Math.max(16, Math.min(51, sceneWidth * 0.034)) * safeLayout.productScale;
+  const spriteWidth = Math.max(18, Math.min(66, sceneWidth * 0.044)) * safeLayout.productScale;
   const safeGap = Math.max(safeLayout.minGap, (spriteWidth + 8) / sceneWidth * 100);
   const motion = createFactoryMotion(safeLayout, safeGap);
   const cycle = Math.max(8, Math.min(28, (1500 / Math.max(25, theoretical)) / (Math.max(.25, speed) * safeLayout.speedScale)));
