@@ -16,6 +16,6 @@
 - Derive displayed machine health from the active fleet's working-unit ratio and repair progress from remaining repair days; this avoids inventing wear or changing the host game's failure rules.
 - Keep appearance as optional visualization data; the preview uses shared defaults without controls or stored appearance overrides so every device shows the intended factory look.
 - Use the processing clock for chamber lifts, mechanism strokes and product crossfades; this makes machine movement and material conversion pause together with host state.
-- Keep saved reference factories in a separate local library with their image and sanitized layout; compare views share one clock so configuration never creates independent game simulations.
+- Keep the factory page to the illustration alone; keep saved reference factories, image analysis and comparison tooling out of the rendered page so the host game embeds the scene without configuration UI.
 - Accept host-owned elapsed/production seconds and repair start/end times as optional visualization clock data; never infer real host recovery by running an independent repair timer.
 - Integrate the original game's existing Zustand store through LiveFactoryVisualization and a structural adapter; reuse its authenticated socket instead of requesting tokens or duplicating simulation logic.

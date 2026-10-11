@@ -1,8 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { FactoryVisualization } from "@/components/FactoryVisualization";
-import { FactoryLibraryControls } from "@/components/FactoryLibraryControls";
-import { initialLibrary, loadLibrary, saveLibrary, type FactoryLibrary } from "@/lib/factory-library";
 import { STAGE_ORDER } from "@/lib/factory-layout";
 import { operatingCapacity, advanceDay, initialSimulation, type SimulationState } from "@/lib/muffin-simulation";
 import type { FactoryClock } from "@/lib/factory-clock";
@@ -21,19 +19,7 @@ export const Route = createFileRoute("/")({
 
 function FactoryPreview() {
   const [state, setState] = useState<SimulationState>(initialSimulation);
-  const [library, setLibrary] = useState<FactoryLibrary>(initialLibrary);
-  const [selected, setSelected] = useState<string[]>(["original"]);
-  const [storageError, setStorageError] = useState(false);
   const [clock, setClock] = useState<FactoryClock>({ elapsedSeconds: 0, productionSeconds: 0, running: true });
-  const [ready, setReady] = useState(false);
-
-  useEffect(() => {
-    const saved = loadLibrary();
-    setLibrary(saved); setSelected([saved.defaultId]);
-    setReady(true);
-  }, []);
-
-  useEffect(() => { if (ready) setStorageError(!saveLibrary(library)); }, [ready, library]);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -59,14 +45,7 @@ function FactoryPreview() {
 
   return <main className="visual-page">
     <div className="visual-wrap">
-      <div className={`factory-comparison ${selected.length > 1 ? "is-comparing" : ""}`}>
-        {selected.map(id => {
-          const factory = library.factories.find(f => f.id === id);
-          return factory ? <FactoryVisualization key={id} title={factory.name} state={state} playing layout={factory.layout} background={factory.background} clock={clock}/> : null;
-        })}
-      </div>
-      <FactoryLibraryControls library={library} onChange={setLibrary} selected={selected} onSelect={setSelected}/>
-      {storageError && <p role="alert" className="appearance-error">Could not save factories on this device. Free some storage before saving another photo.</p>}
+      <FactoryVisualization state={state} playing clock={clock}/>
     </div>
   </main>;
 }
